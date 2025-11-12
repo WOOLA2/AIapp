@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dropout Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .st-emotion-cache-1kyxreq {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 1rem;
+        }
+        .st-emotion-cache-1kyxreq h5 {
+            color: #262730;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .st-emotion-cache-1kyxreq p {
+            color: #262730;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        .st-emotion-cache-1kyxreq strong {
+            color: #262730;
+        }
+        .st-emotion-cache-1kyxreq ul {
+            color: #262730;
+            font-size: 0.8125rem;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .st-emotion-cache-1kyxreq h6 {
+            color: #262730;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .main-header {
+            background: linear-gradient(90deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .main-header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        .prediction-method {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 2rem;
+        }
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        .radio-option label {
+            display: block;
+            padding: 0.75rem;
+            background-color: #f0f2f6;
+            border: 2px solid #f0f2f6;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .radio-option input[type="radio"]:checked + label {
+            background-color: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+        .data-upload {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 1rem;
+        }
+        .file-upload-wrapper {
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            background-color: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        .file-upload-wrapper:hover {
+            border-color: #ff6b6b;
+            background-color: #fff5f5;
+        }
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
+        .file-upload-label {
+            cursor: pointer;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 0.25rem;
+            transition: background-color 0.3s ease;
+        }
+        .file-upload-label:hover {
+            background-color: #ff5252;
+        }
+        .expander {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 1rem;
+        }
+        .expander-header {
+            cursor: pointer;
+            padding: 0.5rem;
+            background-color: #f7fafc;
+            border-radius: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expander-header:hover {
+            background-color: #edf2f7;
+        }
+        .expander-content {
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+        .table-wrapper {
+            background-color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .feature-input-group {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 1rem;
+        }
+        .feature-input {
+            margin-bottom: 1rem;
+        }
+        .feature-input label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: #2d3748;
+        }
+        .feature-input input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .feature-input input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        .feature-input .caption {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-top: 0.25rem;
+        }
+        .prediction-results {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-top: 2rem;
+        }
+        .metric-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            text-align: center;
+            height: 100%;
+        }
+        .metric-card h5 {
+            font-size: 0.875rem;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        .metric-card .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .progress {
+            height: 0.5rem;
+            background-color: #e2e8f0;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .risk-assessment {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-top: 1rem;
+        }
+        .risk-high {
+            background-color: #fed7d7;
+            border-left: 4px solid #e53e3e;
+        }
+        .risk-medium {
+            background-color: #fefcbf;
+            border-left: 4px solid #d69e2e;
+        }
+        .risk-low {
+            background-color: #c6f6d5;
+            border-left: 4px solid #38a169;
+        }
+        .btn-primary {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: #ff5252;
+            border-color: #ff5252;
+        }
+        .btn-success {
+            background-color: #38a169;
+            border-color: #38a169;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .btn-success:hover {
+            background-color: #2f855a;
+            border-color: #2f855a;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background-color: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        .alert-error {
+            background-color: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        .alert-warning {
+            background-color: #fefcbf;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+            border-top: none;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .footer {
+            background-color: #f7fafc;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer strong {
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <h1>🎓 Student Dropout Prediction Dashboard</h1>
+            <p>Predict student academic outcomes using machine learning</p>
+        </div>
+    </div>
+
+    <!-- Model Status -->
+    <div class="container">
+        <div class="alert alert-success">
+            ✅ Model loaded successfully! (Expected 36 features)
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="st-emotion-cache-1kyxreq">
+                    <h5>📊 Model Info</h5>
+                    <p><strong>Model Type:</strong> Random Forest</p>
+                    <p><strong>Input Features:</strong> 36</p>
+                    <p><strong>Classes:</strong> Dropout, Enrolled, Graduate</p>
+                    
+                    <h5>🎯 Instructions</h5>
+                    <p><strong>Option 1 - CSV Upload:</strong></p>
+                    <ul>
+                        <li>Upload student data CSV</li>
+                        <li>Select multiple rows to predict</li>
+                    </ul>
+                    
+                    <p><strong>Option 2 - Manual Entry:</strong></p>
+                    <ul>
+                        <li>Enter values for all features</li>
+                    </ul>
+                    
+                    <h6>🎯 Risk Levels:</h6>
+                    <ul>
+                        <li>🔴 HIGH: >70% dropout probability</li>
+                        <li>🟡 MEDIUM: 30-70% dropout probability</li>
+                        <li>🟢 LOW: <30% dropout probability</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Prediction Method Selection -->
+                <div class="prediction-method">
+                    <h5>Choose prediction method:</h5>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="csv-method" name="method" checked>
+                            <label for="csv-method">📁 Upload CSV & Select Rows</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="manual-method" name="method">
+                            <label for="manual-method">✍️ Manual Data Entry</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CSV Upload Section -->
+                <div id="csv-section">
+                    <div class="data-upload">
+                        <h4>Upload Student Data and Select Specific Students</h4>
+                        
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="csvFile" accept=".csv">
+                            <label for="csvFile" class="file-upload-label">Choose CSV file</label>
+                            <p class="mt-2 text-muted">Drag and drop file here</p>
+                            <p class="text-muted small">Limit 200MB per file • CSV</p>
+                        </div>
+                    </div>
+
+                    <div id="csvResults" style="display: none;">
+                        <div class="alert alert-success" id="csvInfo"></div>
+                        
+                        <div class="expander">
+                            <div class="expander-header" onclick="toggleExpander(this)">
+                                <span>📋 Full Data Preview</span>
+                                <span>▼</span>
+                            </div>
+                            <div class="expander-content" style="display: none;">
+                                <div class="table-wrapper">
+                                    <table class="table table-striped" id="previewTable">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="data-upload">
+                            <label class="form-label">Choose specific student rows to predict</label>
+                            <select class="form-select" id="studentSelect" multiple size="5">
+                                <!-- Options will be added dynamically -->
+                            </select>
+                            <div class="form-text">Hold Ctrl/Cmd to select multiple students</div>
+                        </div>
+
+                        <div id="selectedPreview" style="display: none;">
+                            <h4>📋 Selected Students Data</h4>
+                            <div class="table-wrapper">
+                                <table class="table table-striped" id="selectedTable">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary mt-3" onclick="predictSelectedStudents()">🚀 Predict Selected Students</button>
+                    </div>
+
+                    <!-- Batch Results -->
+                    <div id="batchResults" style="display: none;">
+                        <div class="prediction-results">
+                            <h4>📊 Batch Prediction Results</h4>
+                            <div class="table-wrapper">
+                                <table class="table table-striped" id="resultsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Row</th>
+                                            <th>Student ID</th>
+                                            <th>Prediction</th>
+                                            <th>Dropout Probability</th>
+                                            <th>Enrolled Probability</th>
+                                            <th>Graduate Probability</th>
+                                            <th>Risk Level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-8">
+                                <div class="prediction-results">
+                                    <h5>🎯 Risk Level Distribution</h5>
+                                    <canvas id="riskChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-success" onclick="downloadResults()">📥 Download Predictions as CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Entry Section -->
+                <div id="manual-section" style="display: none;">
+                    <div class="data-upload">
+                        <h4>✍️ Manual Data Entry</h4>
+                        <p>Enter student data manually for prediction</p>
+                    </div>
+
+                    <div class="alert alert-success">
+                        ✅ Using all 36 original feature names
+                    </div>
+
+                    <div class="feature-input-group">
+                        <div class="row" id="featureInputs">
+                            <!-- Features will be generated dynamically -->
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="predictManual()">🔮 Predict Outcome</button>
+
+                    <!-- Manual Results -->
+                    <div id="manualResults" style="display: none;">
+                        <div class="prediction-results">
+                            <h4>Prediction Results</h4>
+                            <div id="predictionResult"></div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h5>Dropout Risk</h5>
+                                        <div class="metric-value text-danger" id="dropoutRisk">0%</div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" id="dropoutProgress" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h5>Still Enrolled</h5>
+                                        <div class="metric-value text-warning" id="enrolledProb">0%</div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" id="enrolledProgress" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="metric-card">
+                                        <h5>Will Graduate</h5>
+                                        <div class="metric-value text-success" id="graduateProb">0%</div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="graduateProgress" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="riskAssessment" class="risk-assessment mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container text-center">
+            <strong>BIAI 3110 • Artificial Intelligence • Group Assignment</strong>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Original feature names from the dataset
+        const originalFeatures = [
+            "Marital status", "Application mode", "Application order", "Course",
+            "Daytime/evening attendance", "Previous qualification", "Previous qualification (grade)",
+            "Nacionality", "Mother's qualification", "Father's qualification",
+            "Mother's occupation", "Father's occupation", "Admission grade", "Displaced",
+            "Educational special needs", "Debtor", "Tuition fees up to date", "Gender",
+            "Scholarship holder", "Age at enrollment", "International",
+            "Curricular units 1st sem (credited)", "Curricular units 1st sem (enrolled)",
+            "Curricular units 1st sem (evaluations)", "Curricular units 1st sem (approved)",
+            "Curricular units 1st sem (grade)", "Curricular units 2nd sem (credited)",
+            "Curricular units 2nd sem (enrolled)", "Curricular units 2nd sem (evaluations)",
+            "Curricular units 2nd sem (approved)", "Curricular units 2nd sem (grade)",
+            "Unemployment rate", "Inflation rate", "GDP"
+        ];
+
+        // Feature guides for better user experience
+        const featureGuides = {
+            'Admission grade': [0, 200, 100],
+            'Curricular units 1st sem (grade)': [0, 20, 10],
+            'Curricular units 2nd sem (grade)': [0, 20, 10],
+            'Age at enrollment': [16, 60, 20],
+            'Unemployment rate': [0, 30, 5],
+            'Inflation rate': [-10, 50, 2],
+            'Previous qualification (grade)': [0, 200, 100],
+            'Gender': [0, 1, 1],
+            'Debtor': [0, 1, 0],
+            'Scholarship holder': [0, 1, 0],
+            'International': [0, 1, 0],
+            'Displaced': [0, 1, 0],
+            'Educational special needs': [0, 1, 0],
+            'Tuition fees up to date': [0, 1, 1],
+            'Daytime/evening attendance': [0, 1, 1]
+        };
+
+        let csvData = [];
+        let selectedStudents = [];
+        let batchPredictions = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateFeatureInputs();
+            setupCSVUpload();
+            setupMethodToggle();
+        });
+
+        // Setup method toggle
+        function setupMethodToggle() {
+            const csvMethod = document.getElementById('csv-method');
+            const manualMethod = document.getElementById('manual-method');
+            const csvSection = document.getElementById('csv-section');
+            const manualSection = document.getElementById('manual-section');
+
+            csvMethod.addEventListener('change', function() {
+                if (this.checked) {
+                    csvSection.style.display = 'block';
+                    manualSection.style.display = 'none';
+                }
+            });
+
+            manualMethod.addEventListener('change', function() {
+                if (this.checked) {
+                    csvSection.style.display = 'none';
+                    manualSection.style.display = 'block';
+                }
+            });
+        }
+
+        // Generate feature inputs for manual entry
+        function generateFeatureInputs() {
+            const container = document.getElementById('featureInputs');
+            originalFeatures.forEach((feature, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 feature-input';
+                
+                let minVal = 0, maxVal = 100, defaultVal = 0;
+                if (featureGuides[feature]) {
+                    [minVal, maxVal, defaultVal] = featureGuides[feature];
+                }
+                
+                col.innerHTML = `
+                    <label>${feature}</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="feature_${index}" 
+                           min="${minVal}" 
+                           max="${maxVal}" 
+                           value="${defaultVal}"
+                           step="${feature.includes('rate') ? '0.1' : '1'}">
+                    <div class="caption">Range: ${minVal}-${maxVal}</div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // Setup CSV upload
+        function setupCSVUpload() {
+            const fileInput = document.getElementById('csvFile');
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    Papa.parse(file, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            csvData = results.data;
+                            processCSVData(results.data);
+                        },
+                        error: function(err) {
+                            showError('Error reading CSV file: ' + err);
+                        }
+                    });
+                }
+            });
+        }
+
+        function processCSVData(data) {
+            const csvResults = document.getElementById('csvResults');
+            const csvInfo = document.getElementById('csvInfo');
+            const select = document.getElementById('studentSelect');
+            
+            if (data.length > 0) {
+                const numFeatures = Object.keys(data[0]).length;
+                if (numFeatures === 36) {
+                    csvInfo.innerHTML = `✅ Loaded ${data.length} student records`;
+                    csvResults.style.display = 'block';
+                    
+                    // Show preview table
+                    showPreviewTable(data);
+                    
+                    // Populate student selection
+                    select.innerHTML = '';
+                    data.forEach((row, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = `Row ${index} - Student ${index+1}`;
+                        select.appendChild(option);
+                    });
+                    
+                    // Setup selection change handler
+                    select.addEventListener('change', updateSelectedPreview);
+                } else {
+                    csvInfo.innerHTML = `❌ Wrong number of features! Expected 36, got ${numFeatures}`;
+                    csvResults.style.display = 'block';
+                }
+            }
+        }
+
+        function showPreviewTable(data) {
+            const table = document.getElementById('previewTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            // Create header
+            thead.innerHTML = '<tr>' + Object.keys(data[0]).map(key => `<th>${key}</th>`).join('') + '</tr>';
+            
+            // Create body (show first 5 rows)
+            tbody.innerHTML = '';
+            data.slice(0, 5).forEach(row => {
+                const tr = document.createElement('tr');
+                Object.values(row).forEach(value => {
+                    tr.innerHTML += `<td>${value}</td>`;
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleExpander(element) {
+            const content = element.nextElementSibling;
+            const arrow = element.querySelector('span:last-child');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                arrow.textContent = '▲';
+            } else {
+                content.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        }
+
+        function updateSelectedPreview() {
+            const select = document.getElementById('studentSelect');
+            const preview = document.getElementById('selectedPreview');
+            const table = document.getElementById('selectedTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            selectedStudents = Array.from(select.selectedOptions).map(opt => parseInt(opt.value));
+            
+            if (selectedStudents.length > 0) {
+                preview.style.display = 'block';
+                
+                // Create header
+                thead.innerHTML = '<tr><th>#</th>' + Object.keys(csvData[0]).map(key => `<th>${key}</th>`).join('') + '</tr>';
+                
+                // Create body
+                tbody.innerHTML = '';
+                selectedStudents.forEach(index => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${index}</td>`;
+                    Object.values(csvData[index]).forEach(value => {
+                        row.innerHTML += `<td>${value}</td>`;
+                    });
+                    tbody.appendChild(row);
+                });
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function predictSelectedStudents() {
+            if (selectedStudents.length === 0) {
+                showError('Please select at least one student');
+                return;
+            }
+
+            batchPredictions = [];
+            selectedStudents.forEach(index => {
+                // Simulate prediction
+                const dropoutProb = Math.random() * 0.8;
+                const enrolledProb = Math.random() * (1 - dropoutProb);
+                const graduateProb = 1 - dropoutProb - enrolledProb;
+                
+                let prediction, riskLevel;
+                if (dropoutProb > enrolledProb && dropoutProb > graduateProb) {
+                    prediction = "Dropout";
+                    riskLevel = dropoutProb > 0.7 ? "HIGH" : dropoutProb > 0.3 ? "MEDIUM" : "LOW";
+                } else if (enrolledProb > graduateProb) {
+                    prediction = "Enrolled";
+                    riskLevel = "LOW";
+                } else {
+                    prediction = "Graduate";
+                    riskLevel = "LOW";
+                }
+
+                batchPredictions.push({
+                    row: index,
+                    studentId: `Student ${index + 1}`,
+                    prediction: prediction,
+                    dropoutProb: (dropoutProb * 100).toFixed(1) + '%',
+                    enrolledProb: (enrolledProb * 100).toFixed(1) + '%',
+                    graduateProb: (graduateProb * 100).toFixed(1) + '%',
+                    riskLevel: riskLevel
+                });
+            });
+
+            displayBatchResults();
+        }
+
+        function displayBatchResults() {
+            const batchResults = document.getElementById('batchResults');
+            const tableBody = document.querySelector('#resultsTable tbody');
+            
+            batchResults.style.display = 'block';
+            
+            // Populate results table
+            tableBody.innerHTML = '';
+            batchPredictions.forEach(pred => {
+                const row = document.createElement('tr');
+                let riskBadge = pred.riskLevel === 'HIGH' ? '🔴' : pred.riskLevel === 'MEDIUM' ? '🟡' : '🟢';
+                row.innerHTML = `
+                    <td>${pred.row}</td>
+                    <td>${pred.studentId}</td>
+                    <td>${pred.prediction}</td>
+                    <td>${pred.dropoutProb}</td>
+                    <td>${pred.enrolledProb}</td>
+                    <td>${pred.graduateProb}</td>
+                    <td>${riskBadge} ${pred.riskLevel}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Create risk distribution chart
+            createRiskChart();
+        }
+
+        function createRiskChart() {
+            const riskCounts = {
+                HIGH: batchPredictions.filter(p => p.riskLevel === 'HIGH').length,
+                MEDIUM: batchPredictions.filter(p => p.riskLevel === 'MEDIUM').length,
+                LOW: batchPredictions.filter(p => p.riskLevel === 'LOW').length
+            };
+
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['HIGH', 'MEDIUM', 'LOW'],
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: [riskCounts.HIGH, riskCounts.MEDIUM, riskCounts.LOW],
+                        backgroundColor: ['#e53e3e', '#d69e2e', '#38a169']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function predictManual() {
+            const featureValues = [];
+            for (let i = 0; i < originalFeatures.length; i++) {
+                const value = parseFloat(document.getElementById(`feature_${i}`).value);
+                featureValues.push(value);
+            }
+
+            // Simulate prediction
+            const dropoutProb = Math.random() * 0.8;
+            const enrolledProb = Math.random() * (1 - dropoutProb);
+            const graduateProb = 1 - dropoutProb - enrolledProb;
+
+            displayManualResults(dropoutProb, enrolledProb, graduateProb);
+        }
+
+        function displayManualResults(dropoutProb, enrolledProb, graduateProb) {
+            const results = document.getElementById('manualResults');
+            results.style.display = 'block';
+
+            // Update probabilities
+            document.getElementById('dropoutRisk').textContent = (dropoutProb * 100).toFixed(1) + '%';
+            document.getElementById('enrolledProb').textContent = (enrolledProb * 100).toFixed(1) + '%';
+            document.getElementById('graduateProb').textContent = (graduateProb * 100).toFixed(1) + '%';
+
+            // Update progress bars
+            document.getElementById('dropoutProgress').style.width = (dropoutProb * 100) + '%';
+            document.getElementById('enrolledProgress').style.width = (enrolledProb * 100) + '%';
+            document.getElementById('graduateProgress').style.width = (graduateProb * 100) + '%';
+
+            // Determine prediction
+            let prediction, riskClass, riskText;
+            if (dropoutProb > enrolledProb && dropoutProb > graduateProb) {
+                prediction = "🚨 DROPOUT";
+                riskClass = "risk-high";
+                riskText = "🔴 HIGH RISK: This student has high dropout probability";
+            } else if (enrolledProb > graduateProb) {
+                prediction = "📚 ENROLLED";
+                riskClass = "risk-medium";
+                riskText = "🟡 MEDIUM RISK: This student needs monitoring";
+            } else {
+                prediction = "🎓 GRADUATE";
+                riskClass = "risk-low";
+                riskText = "🟢 LOW RISK: This student is likely to continue";
+            }
+
+            // Update prediction result
+            document.getElementById('predictionResult').innerHTML = `
+                <div class="alert ${riskClass === 'risk-high' ? 'alert-error' : riskClass === 'risk-medium' ? 'alert-warning' : 'alert-success'}">
+                    <h4>PREDICTION: ${prediction}</h4>
+                </div>
+            `;
+
+            // Update risk assessment
+            document.getElementById('riskAssessment').innerHTML = `
+                <h5>🎯 Risk Assessment</h5>
+                <p>${riskText}</p>
+            `;
+        }
+
+        function downloadResults() {
+            let csv = 'Row,Student ID,Prediction,Dropout Probability,Enrolled Probability,Graduate Probability,Risk Level\n';
+            batchPredictions.forEach(pred => {
+                csv += `"${pred.row}","${pred.studentId}","${pred.prediction}","${pred.dropoutProb}","${pred.enrolledProb}","${pred.graduateProb}","${pred.riskLevel}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'student_predictions.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.innerHTML = message;
+            alertDiv.style.position = 'fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
