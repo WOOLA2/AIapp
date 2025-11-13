@@ -8,7 +8,7 @@ df = None
 
 for sep in separators:
     try:
-        df = pd.read_csv(r"C:\Users\Molefi\Desktop\luctaifile\datasample.csv", sep=sep)
+        df = pd.read_csv(r"C:\Users\Molefi\Desktop\limkos\datasample.csv", sep=sep)
         if df.shape[1] > 1:
             break
     except:
@@ -140,7 +140,7 @@ if 'Target' in df_cleaned.columns:
 
 # Save cleaned data
 try:
-    df_cleaned.to_csv(r"C:\Users\Molefi\Desktop\luctaifile\cleaned_sample.csv", index=False)
+    df_cleaned.to_csv(r"C:\Users\Molefi\Desktop\limkos\cleaned_sample.csv", index=False)
     print("Cleaned dataset saved as 'cleaned_sample.csv'")
 except Exception as e:
     print(f"Could not save cleaned dataset: {e}")

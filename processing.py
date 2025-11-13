@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import joblib
 
-df = pd.read_csv(r"C:\Users\Molefi\Desktop\luctaifile\cleaned_sample.csv")
+df = pd.read_csv(r"C:\Users\Molefi\Desktop\limkos\cleaned_sample.csv")
 
 # Your existing processing code...
 df['Success_rate_1st'] = df['Curricular units 1st sem (approved)'] / df['Curricular units 1st sem (enrolled)'].replace(0, 1)
