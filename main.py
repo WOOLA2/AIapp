@@ -1,19 +1,24 @@
-print("=== STUDENT DROPOUT PREDICTION PIPELINE ===\n")
+print("=== STUDENT DROPOUT PREDICTION PIPELINE ===")
 
-print("1. 📊 Data gathering and cleaning...")
-exec(open("task1_cleaning.py").read())
+print("\n1. 📊 Data gathering and cleaning...")
+import dataload
 
-print("\n2. 🔧 Data preprocessing...") 
-exec(open("task2_preprocessing.py").read())
+print("\n2. 🔧 Data preprocessing...")
+import processing
 
 print("\n3. 🤖 Model training...")
-exec(open("task4_training.py").read())
+print("   Training Logistic Regression...")
+import train_logistic
+
+print("   Training Random Forest...")
+import train_random
 
 print("\n4. ⚙️ Model tuning...")
-exec(open("task5_tuning.py").read())
+import model_tuning
 
 print("\n5. 📁 Creating test data...")
-exec(open("create_test_data.py").read())
+import create_testing_data
 
 print("\n🎉 PIPELINE COMPLETE!")
 print("👉 Next: Run 'streamlit run dashboard.py' for the prediction dashboard")
+print("👉 Don't forget to write your 10+ page report!")

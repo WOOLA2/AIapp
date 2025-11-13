@@ -1,29 +1,30 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+import joblib
 
-df = pd.read_csv(r"C:\Users\Molefi\Desktop\ProjectAI\cleaned_data.csv")  # Default comma separator
+df = pd.read_csv(r"C:\Users\Molefi\Desktop\luctaifile\cleaned_sample.csv")
 
-print("=== TASK 2: DATA PREPROCESSING ===")
-
-# Fix: Use only features that actually exist
+# Your existing processing code...
 df['Success_rate_1st'] = df['Curricular units 1st sem (approved)'] / df['Curricular units 1st sem (enrolled)'].replace(0, 1)
 df['Success_rate_2nd'] = df['Curricular units 2nd sem (approved)'] / df['Curricular units 2nd sem (enrolled)'].replace(0, 1)
 df['Grade_improvement'] = df['Curricular units 2nd sem (grade)'] - df['Curricular units 1st sem (grade)']
 
-# Fix: Only remove truly useless columns (keep economic indicators)
 columns_to_remove = ['Curricular units 1st sem (without evaluations)', 
                     'Curricular units 2nd sem (without evaluations)']
 df_clean = df.drop(columns=columns_to_remove)
 
-print("✅ Created 3 meaningful features from existing data")
-print("✅ Kept important economic indicators")
-
-# PROPERLY encode categorical target
 le = LabelEncoder()
 df_clean['Target_encoded'] = le.fit_transform(df_clean['Target'])
-
-# Save WITHOUT the original Target column to avoid confusion
 df_clean = df_clean.drop('Target', axis=1)
-df_clean.to_csv("processed_student_data.csv", index=False)
-print("✅ Task 2 complete: Proper feature engineering and encoding")
+
+# Save processed data
+df_clean.to_csv("processed_data.csv", index=False)
+
+# Save expected features for dashboard
+expected_features = df_clean.drop('Target_encoded', axis=1).columns.tolist()
+joblib.dump(expected_features, 'expected_features.pkl')
+joblib.dump(le, 'label_encoder.pkl')
+
+print("Task 2 complete: Proper feature engineering and encoding")
+print(f"Expected features saved: {len(expected_features)} features")

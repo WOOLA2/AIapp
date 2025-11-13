@@ -4,7 +4,7 @@ import numpy as np
 print("=== CREATING TEST DATA ===")
 
 # Load original data
-df_original = pd.read_csv(r"C:\Users\Molefi\Desktop\ProjectAI\studata.csv", sep=';')
+df_original = pd.read_csv(r"C:\Users\Molefi\Desktop\ProjectAI\maindata.csv", sep=';')
 
 print(f"Original data shape: {df_original.shape}")
 
@@ -17,5 +17,5 @@ print(f"Number of features: {len(df_test.columns)}")
 # Save test data
 df_test.to_csv("no_target.csv", index=False)
 
-print("\n✅ Created: no_target.csv")
+print("\n✅ Created: student_data_no_target.csv")
 print("✅ Ready for dashboard testing!")
