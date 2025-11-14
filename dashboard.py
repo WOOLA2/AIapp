@@ -125,15 +125,6 @@ st.markdown(
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         font-family: 'Arial', sans-serif;
     }
-    .sidebar-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 8px 32px rgba(139, 0, 139, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
     </style>
     """,
     unsafe_allow_html=True
@@ -143,13 +134,14 @@ st.markdown(
 @st.cache_resource
 def load_models():
     try:
-        model = joblib.load('tuned_student_model.pkl')
-        expected_features = joblib.load('expected_features.pkl')
+        model = joblib.load('tuned_student_model_compressed.pkl')
+        expected_features = joblib.load('expected_features_compressed.pkl')
         preprocessor = StudentDataPreprocessor()
         return model, expected_features, preprocessor, True
     except Exception as e:
         st.error(f"Error loading models: {e}")
         return None, None, None, False
+
 
 # Header
 st.markdown("<h1 class='main-title'>Luct AI</h1>", unsafe_allow_html=True)
@@ -421,37 +413,3 @@ else:  # Manual Data Entry
                     )
 
 st.markdown('</div>', unsafe_allow_html=True)
-
-# Sidebar info
-with st.sidebar:
-    st.markdown('<div class="sidebar-card">', unsafe_allow_html=True)
-    st.header("Dashboard Info")
-    st.write("**Model:** Tuned Random Forest")
-    st.write(f"**Required Features:** {len(expected_features)}")
-    st.write("**Classes:** Dropout, Enrolled, Graduate")
-    
-    st.header("Processing Pipeline")
-    st.write("1. **Clean:** Handle missing values & outliers")
-    st.write("2. **Process:** Create engineered features") 
-    st.write("3. **Align:** Match training features")
-    st.write("4. **Predict:** ML model prediction")
-    
-    st.header("Data Entry Tips")
-    st.write("• Leave cells empty for missing values")
-    st.write("• Enter 'nan' for explicit missing data")
-    st.write("• Enter numbers for numerical features")
-    st.write("• System auto-detects and handles issues")
-    
-    # Create sample template
-    try:
-        sample_template = pd.DataFrame(columns=expected_features)
-        csv_template = sample_template.to_csv(index=False)
-        st.download_button(
-            "Download Sample Template",
-            csv_template,
-            "prediction_template.csv",
-            "text/csv"
-        )
-    except Exception as e:
-        st.error(f"Could not create template: {e}")
-    st.markdown('</div>', unsafe_allow_html=True)
